@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistem Render Modular</title>
+    <style>
+        /* CSS untuk mendukung prinsip Scalable & UI */
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
+        table { width: 100%; border-collapse: collapse; background: white; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #eee; }
+        .controls { margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button onclick="renderData(dataSet, 'table', 'app')">Render Table</button>
+        <button onclick="renderData(dataSet, 'card', 'app')">Render Card</button>
+        <button onclick="renderData(dataSet, 'list', 'app')">Render List</button>
+    </div>
+
+    <div id="app">
+        <p>Klik tombol di atas untuk merender data.</p>
+    </div>
+
+    <script>
+        // Data & Logic (dari pesan sebelumnya)
+        const dataSet = [
+            { id: 1, nama: "Satu" },
+            { id: 2, nama: "Dua" },
+            { id: 3, nama: "Tiga" }
+        ];
+
+        const renderStrategies = {
+            table: (item) => `<tr><td>${item.id}</td><td>${item.nama}</td></tr>`,
+            card: (item) => `<div class="card"><h3>${item.nama}</h3><p>ID: ${item.id}</p></div>`,
+            list: (item) => `<li>${item.nama} (ID: ${item.id})</li>`
+        };
+
+        function renderData(data, type, containerId) {
+            const strategy = renderStrategies[type];
+            const htmlContent = data.map(item => strategy(item)).join("");
+
+            const wrappers = {
+                table: `<table><thead><tr><th>ID</th><th>Nama</th></tr></thead><tbody>${htmlContent}</tbody></table>`,
+                list: `<ul>${htmlContent}</ul>`,
+                card: `<div class="card-grid">${htmlContent}</div>`
+            };
+
+            document.getElementById(containerId).innerHTML = wrappers[type];
+        }
+    </script>
+</body>
+</html>
