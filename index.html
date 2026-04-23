@@ -1,57 +1,120 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Sistem Render Modular</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Render Modular 9 Data</title>
     <style>
-        /* CSS untuk mendukung prinsip Scalable & UI */
-        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .card { background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
-        table { width: 100%; border-collapse: collapse; background: white; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #eee; }
-        .controls { margin-bottom: 20px; }
+        :root { --primary: #2563eb; --bg: #f8fafc; --white: #ffffff; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); padding: 20px; color: #1e293b; }
+        
+        /* Navigasi / Menu */
+        .menu { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
+        .menu-btn { padding: 10px 18px; border: none; border-radius: 8px; background: var(--white); 
+                    cursor: pointer; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: 0.2s; }
+        .menu-btn:hover { background: var(--primary); color: white; }
+        .menu-btn.active { background: var(--primary); color: white; }
+
+        /* Container Utama */
+        #render-target { max-width: 1000px; margin: 0 auto; }
+
+        /* Style: Table */
+        table { width: 100%; border-collapse: collapse; background: var(--white); border-radius: 10px; overflow: hidden; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        th { background: #f1f5f9; text-transform: uppercase; font-size: 12px; }
+
+        /* Style: Card */
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .card { background: var(--white); padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        
+        /* Style: List */
+        .list-group { background: var(--white); padding: 10px 20px; border-radius: 10px; list-style: none; }
+        .list-item { padding: 10px 0; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <button onclick="renderData(dataSet, 'table', 'app')">Render Table</button>
-        <button onclick="renderData(dataSet, 'card', 'app')">Render Card</button>
-        <button onclick="renderData(dataSet, 'list', 'app')">Render List</button>
-    </div>
+    <div class="menu" id="main-menu">
+        </div>
 
-    <div id="app">
-        <p>Klik tombol di atas untuk merender data.</p>
-    </div>
+    <div id="render-target"></div>
 
     <script>
-        // Data & Logic (dari pesan sebelumnya)
-        const dataSet = [
-            { id: 1, nama: "Satu" },
-            { id: 2, nama: "Dua" },
-            { id: 3, nama: "Tiga" }
-        ];
+        /**
+         * 1. DATA SET (Scalable: 9 Data)
+         */
+        const dataSet = Array.from({ length: 9 }, (_, i) => ({
+            id: i + 1,
+            nama: `Nama Ke-${i + 1}`,
+            kategori: (i + 1) % 2 === 0 ? "Premium" : "Reguler"
+        }));
 
-        const renderStrategies = {
-            table: (item) => `<tr><td>${item.id}</td><td>${item.nama}</td></tr>`,
-            card: (item) => `<div class="card"><h3>${item.nama}</h3><p>ID: ${item.id}</p></div>`,
-            list: (item) => `<li>${item.nama} (ID: ${item.id})</li>`
+        /**
+         * 2. UI COMPONENTS (Modular & Reuse)
+         * Setiap fungsi mengembalikan string HTML untuk satu tipe tampilan.
+         */
+        const RenderTemplates = {
+            table: (data) => `
+                <table>
+                    <thead><tr><th>ID</th><th>Nama</th><th>Kategori</th></tr></thead>
+                    <tbody>${data.map(item => `<tr><td>${item.id}</td><td>${item.nama}</td><td>${item.kategori}</td></tr>`).join('')}</tbody>
+                </table>`,
+
+            card: (data) => `
+                <div class="grid-layout">
+                    ${data.map(item => `
+                        <div class="card">
+                            <small>ID: ${item.id}</small>
+                            <h3>${item.nama}</h3>
+                            <p>Status: ${item.kategori}</p>
+                        </div>
+                    `).join('')}
+                </div>`,
+
+            list: (data) => `
+                <ul class="list-group">
+                    ${data.map(item => `<li class="list-item"><span>${item.nama}</span> <b>#${item.id}</b></li>`).join('')}
+                </ul>`,
+
+            array: (data) => `<pre style="background:#eee; p:20px;">${JSON.stringify(data, null, 2)}</pre>`
         };
 
-        function renderData(data, type, containerId) {
-            const strategy = renderStrategies[type];
-            const htmlContent = data.map(item => strategy(item)).join("");
+        /**
+         * 3. CORE ENGINE (Function & Looping)
+         * Fungsi tunggal yang mengelola semua jenis render (DRY)
+         */
+        const App = {
+            initMenu: function() {
+                const menuContainer = document.getElementById('main-menu');
+                const modes = Object.keys(RenderTemplates); // Ambil semua key dari templates (Modular)
 
-            const wrappers = {
-                table: `<table><thead><tr><th>ID</th><th>Nama</th></tr></thead><tbody>${htmlContent}</tbody></table>`,
-                list: `<ul>${htmlContent}</ul>`,
-                card: `<div class="card-grid">${htmlContent}</div>`
-            };
+                menuContainer.innerHTML = modes.map(mode => `
+                    <button class="menu-btn" onclick="App.executeRender('${mode}')">
+                        Render ${mode.toUpperCase()}
+                    </button>
+                `).join('');
+            },
 
-            document.getElementById(containerId).innerHTML = wrappers[type];
-        }
+            executeRender: function(mode) {
+                const target = document.getElementById('render-target');
+                
+                // Logic Reuse: Panggil template berdasarkan key mode
+                if (RenderTemplates[mode]) {
+                    target.innerHTML = RenderTemplates[mode](dataSet);
+                    this.updateActiveBtn(mode);
+                }
+            },
+
+            updateActiveBtn: function(mode) {
+                document.querySelectorAll('.menu-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.innerText.toLowerCase().includes(mode));
+                });
+            }
+        };
+
+        // Jalankan aplikasi pertama kali
+        App.initMenu();
+        App.executeRender('table'); // Default view
     </script>
 </body>
 </html>
