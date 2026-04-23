@@ -2,35 +2,75 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Smart Render UI</title>
+<title>Smart Render System Pro</title>
 
 <style>
 body {
     font-family: 'Segoe UI', sans-serif;
-    background: linear-gradient(135deg, #dfe9f3, #ffffff);
+    background: linear-gradient(135deg, #eef2ff, #ffffff);
     padding: 20px;
 }
 
-/* NAVBAR MENU */
+/* HEADER */
+h2 {
+    margin-bottom: 15px;
+}
+
+/* NAVBAR (LEBIH KEREN) */
 .navbar {
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    background: white;
+    padding: 10px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    width: fit-content;
 }
 
 .navbar button {
     border: none;
-    padding: 10px 15px;
+    padding: 8px 18px;
     border-radius: 20px;
-    background: #eee;
+    background: transparent;
     cursor: pointer;
+    font-weight: 500;
     transition: 0.3s;
 }
 
-.navbar button.active,
 .navbar button:hover {
-    background: #6c63ff;
+    background: #eef2ff;
+}
+
+.navbar button.active {
+    background: #6366f1;
     color: white;
+    box-shadow: 0 3px 8px rgba(99,102,241,0.4);
+}
+
+/* FORM */
+.form-box {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+input {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-right: 10px;
+}
+
+.add-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
 }
 
 /* CARD */
@@ -41,12 +81,11 @@ body {
 }
 
 .card {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(10px);
+    background: white;
     padding: 15px;
     border-radius: 12px;
     transition: 0.3s;
-    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.08);
 }
 
 .card:hover {
@@ -63,7 +102,7 @@ table {
 }
 
 th {
-    background: #6c63ff;
+    background: #6366f1;
     color: white;
 }
 
@@ -79,17 +118,13 @@ ul {
     border-radius: 10px;
 }
 
-li {
-    padding: 5px 0;
-}
-
-/* ANIMATION */
+/* ANIMASI */
 .fade {
-    animation: fadeIn 0.4s ease;
+    animation: fadeIn 0.3s ease;
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
+    from { opacity: 0; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
 }
 </style>
@@ -97,8 +132,15 @@ li {
 </head>
 <body>
 
-<h2>✨ Smart Render System</h2>
+<h2>✨ Smart Render System Pro</h2>
 
+<!-- FORM TAMBAH DATA -->
+<div class="form-box">
+    <input type="text" id="namaInput" placeholder="Masukkan nama...">
+    <button class="add-btn" onclick="tambahData()">Tambah</button>
+</div>
+
+<!-- MENU KEREN -->
 <div class="navbar">
     <button onclick="handleClick(this, 'table')">Table</button>
     <button onclick="handleClick(this, 'card')">Card</button>
@@ -107,23 +149,31 @@ li {
     <button onclick="handleClick(this, 'array')">Array</button>
 </div>
 
+<!-- OUTPUT -->
 <div id="app" class="fade">
     <p>Pilih menu di atas 🚀</p>
 </div>
 
 <script>
-// DATA (SCALABLE)
-const dataSet = Array.from({length: 9}, (_, i) => ({
-    id: i + 1,
-    nama: ["Satu","Dua","Tiga","Empat","Lima","Enam","Tujuh","Delapan","Sembilan"][i]
-}));
+// DATA AWAL (SCALABLE)
+let dataSet = [
+    { id: 1, nama: "Satu" },
+    { id: 2, nama: "Dua" },
+    { id: 3, nama: "Tiga" },
+    { id: 4, nama: "Empat" },
+    { id: 5, nama: "Lima" },
+    { id: 6, nama: "Enam" },
+    { id: 7, nama: "Tujuh" },
+    { id: 8, nama: "Delapan" },
+    { id: 9, nama: "Sembilan" }
+];
 
 // STRATEGY (DRY)
 const renderStrategies = {
     table: (item) => `<tr><td>${item.id}</td><td>${item.nama}</td></tr>`,
     card: (item) => `<div class="card"><h3>${item.nama}</h3><p>ID: ${item.id}</p></div>`,
     list: (item) => `<li>${item.nama} (ID: ${item.id})</li>`,
-    menu: (item) => `<li>${item.nama}</li>`,
+    menu: (item) => `<span style="padding:6px 12px;background:#eef2ff;border-radius:15px">${item.nama}</span>`,
     array: () => `<pre>${JSON.stringify(dataSet, null, 2)}</pre>`
 };
 
@@ -132,30 +182,51 @@ const wrappers = {
     table: (c) => `<table><thead><tr><th>ID</th><th>Nama</th></tr></thead><tbody>${c}</tbody></table>`,
     card: (c) => `<div class="card-grid">${c}</div>`,
     list: (c) => `<ul>${c}</ul>`,
-    menu: (c) => `<ul style="display:flex;gap:10px;background:white;padding:10px;border-radius:10px">${c}</ul>`,
+    menu: (c) => `<div style="display:flex;gap:10px;flex-wrap:wrap;background:white;padding:15px;border-radius:10px">${c}</div>`,
     array: (c) => c
 };
 
-// RENDER FUNCTION
+// RENDER
 function renderData(type) {
-    const strategy = renderStrategies[type];
-
     let content;
+
     if (type === "array") {
-        content = strategy();
+        content = renderStrategies[type]();
     } else {
-        content = dataSet.map(item => strategy(item)).join("");
+        content = dataSet.map(item => renderStrategies[type](item)).join("");
     }
 
     document.getElementById("app").innerHTML =
         `<div class="fade">${wrappers[type](content)}</div>`;
 }
 
-// HANDLE ACTIVE MENU
+// MENU ACTIVE
 function handleClick(btn, type) {
     document.querySelectorAll(".navbar button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     renderData(type);
+}
+
+// TAMBAH DATA
+function tambahData() {
+    const input = document.getElementById("namaInput");
+    const nama = input.value.trim();
+
+    if (!nama) {
+        alert("Nama tidak boleh kosong!");
+        return;
+    }
+
+    const newId = dataSet.length + 1;
+    dataSet.push({ id: newId, nama: nama });
+
+    input.value = "";
+
+    // auto refresh tampilan terakhir
+    const activeBtn = document.querySelector(".navbar button.active");
+    if (activeBtn) {
+        activeBtn.click();
+    }
 }
 </script>
 
