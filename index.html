@@ -1,110 +1,161 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Render Data dengan Menu</title>
-  <style>
-    body {
-      font-family: Arial;
-      padding: 20px;
-    }
+<meta charset="UTF-8">
+<title>Smart Render UI</title>
 
-    button {
-      margin: 5px;
-      padding: 8px 12px;
-      cursor: pointer;
-    }
+<style>
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #dfe9f3, #ffffff);
+    padding: 20px;
+}
 
-    .card-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
+/* NAVBAR MENU */
+.navbar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
 
-    .card {
-      border: 1px solid #ccc;
-      padding: 10px;
-      width: 100px;
-      border-radius: 6px;
-    }
-  </style>
+.navbar button {
+    border: none;
+    padding: 10px 15px;
+    border-radius: 20px;
+    background: #eee;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.navbar button.active,
+.navbar button:hover {
+    background: #6c63ff;
+    color: white;
+}
+
+/* CARD */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    padding: 15px;
+    border-radius: 12px;
+    transition: 0.3s;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* TABLE */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th {
+    background: #6c63ff;
+    color: white;
+}
+
+th, td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+/* LIST */
+ul {
+    background: white;
+    padding: 15px;
+    border-radius: 10px;
+}
+
+li {
+    padding: 5px 0;
+}
+
+/* ANIMATION */
+.fade {
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+</style>
+
 </head>
 <body>
 
-<h2>MENU</h2>
-<button onclick="tampilkan('table')">Table</button>
-<button onclick="tampilkan('list')">List</button>
-<button onclick="tampilkan('card')">Card</button>
-<button onclick="tampilkan('menu')">Menu</button>
-<button onclick="tampilkan('array')">Array</button>
+<h2>✨ Smart Render System</h2>
 
-<hr>
+<div class="navbar">
+    <button onclick="handleClick(this, 'table')">Table</button>
+    <button onclick="handleClick(this, 'card')">Card</button>
+    <button onclick="handleClick(this, 'list')">List</button>
+    <button onclick="handleClick(this, 'menu')">Menu</button>
+    <button onclick="handleClick(this, 'array')">Array</button>
+</div>
 
-<div id="output"></div>
+<div id="app" class="fade">
+    <p>Pilih menu di atas 🚀</p>
+</div>
 
 <script>
-const data = [
-  { id: 1, nama: "Satu" },
-  { id: 2, nama: "Dua" },
-  { id: 3, nama: "Tiga" },
-  { id: 4, nama: "Empat" },
-  { id: 5, nama: "Lima" },
-  { id: 6, nama: "Enam" },
-  { id: 7, nama: "Tujuh" },
-  { id: 8, nama: "Delapan" },
-  { id: 9, nama: "Sembilan" }
-];
+// DATA (SCALABLE)
+const dataSet = Array.from({length: 9}, (_, i) => ({
+    id: i + 1,
+    nama: ["Satu","Dua","Tiga","Empat","Lima","Enam","Tujuh","Delapan","Sembilan"][i]
+}));
 
-// FUNCTION UTAMA (DRY & REUSABLE)
-function render(type, data) {
-  let output = "";
+// STRATEGY (DRY)
+const renderStrategies = {
+    table: (item) => `<tr><td>${item.id}</td><td>${item.nama}</td></tr>`,
+    card: (item) => `<div class="card"><h3>${item.nama}</h3><p>ID: ${item.id}</p></div>`,
+    list: (item) => `<li>${item.nama} (ID: ${item.id})</li>`,
+    menu: (item) => `<li>${item.nama}</li>`,
+    array: () => `<pre>${JSON.stringify(dataSet, null, 2)}</pre>`
+};
 
-  if (type === "table") {
-    output += "<table border='1'><tr><th>ID</th><th>Nama</th></tr>";
-    data.forEach(item => {
-      output += `<tr><td>${item.id}</td><td>${item.nama}</td></tr>`;
-    });
-    output += "</table>";
-  }
+// WRAPPER (MODULAR)
+const wrappers = {
+    table: (c) => `<table><thead><tr><th>ID</th><th>Nama</th></tr></thead><tbody>${c}</tbody></table>`,
+    card: (c) => `<div class="card-grid">${c}</div>`,
+    list: (c) => `<ul>${c}</ul>`,
+    menu: (c) => `<ul style="display:flex;gap:10px;background:white;padding:10px;border-radius:10px">${c}</ul>`,
+    array: (c) => c
+};
 
-  else if (type === "list") {
-    output += "<ul>";
-    data.forEach(item => {
-      output += `<li>${item.id} - ${item.nama}</li>`;
-    });
-    output += "</ul>";
-  }
+// RENDER FUNCTION
+function renderData(type) {
+    const strategy = renderStrategies[type];
 
-  else if (type === "card") {
-    output += "<div class='card-container'>";
-    data.forEach(item => {
-      output += `
-        <div class='card'>
-          <h4>${item.nama}</h4>
-          <p>ID: ${item.id}</p>
-        </div>
-      `;
-    });
-    output += "</div>";
-  }
+    let content;
+    if (type === "array") {
+        content = strategy();
+    } else {
+        content = dataSet.map(item => strategy(item)).join("");
+    }
 
-  else if (type === "menu") {
-    output += "<nav><ul style='display:flex;gap:10px'>";
-    data.forEach(item => {
-      output += `<li>${item.nama}</li>`;
-    });
-    output += "</ul></nav>";
-  }
-
-  else if (type === "array") {
-    output = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-  }
-
-  return output;
+    document.getElementById("app").innerHTML =
+        `<div class="fade">${wrappers[type](content)}</div>`;
 }
 
-// FUNCTION CONTROL MENU
-function tampilkan(type) {
-  document.getElementById("output").innerHTML = render(type, data);
+// HANDLE ACTIVE MENU
+function handleClick(btn, type) {
+    document.querySelectorAll(".navbar button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    renderData(type);
 }
 </script>
 
